@@ -1,0 +1,51 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "raycast-ocr",
+  "title": "OCR Text Recognition",
+  "description": "Extract text from images using macOS Vision API",
+  "icon": "command-icon.png",
+  "author": "moguw",
+  "license": "MIT",
+  "version": "1.0.0",
+  "files": [
+    "assets",
+    "src/scripts"
+  ],
+  "commands": [
+    {
+      "name": "ocr-from-clipboard",
+      "title": "OCR from Clipboard",
+      "description": "Recognize text from image in clipboard",
+      "mode": "no-view"
+    },
+    {
+      "name": "ocr-from-screenshot",
+      "title": "OCR from Screenshot",
+      "description": "Take screenshot and recognize text",
+      "mode": "no-view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.83.2",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.2",
+    "react": "^18.3.1",
+    "typescript": "^5.5.3"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`pnpm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`pnpm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "pnpm dlx @raycast/api@latest publish"
+  }
+}
