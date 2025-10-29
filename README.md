@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/command-icon.png" alt="OCR Logo" width="200"/>
+  <img src="assets/icon-anthroopic.png" alt="OCR Logo" width="200"/>
 </p>
 
 <h1 align="center">Raycast OCR Extension</h1>
