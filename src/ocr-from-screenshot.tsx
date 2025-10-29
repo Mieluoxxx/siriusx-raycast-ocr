@@ -1,6 +1,8 @@
 import { Clipboard, showToast, Toast, showHUD, closeMainWindow } from "@raycast/api";
-import { recognizeTextFromImage } from "./utils/vision-ocr";
 import { takeScreenshot, cleanupTempFile } from "./utils/clipboard";
+import { getBackendConfig } from "./utils/config";
+import { OCRBackendFactory } from "./backends/factory";
+import { OCRError, OCRErrorType } from "./backends/types";
 import { access } from "fs/promises";
 
 export default async function Command() {
@@ -37,8 +39,12 @@ export default async function Command() {
       title: "正在识别截图中的文字...",
     });
 
+    // 创建后端实例
+    const config = await getBackendConfig();
+    const backend = OCRBackendFactory.create(config);
+
     // Recognize text
-    const recognizedText = await recognizeTextFromImage(tempFilePath);
+    const recognizedText = await backend.recognizeText(tempFilePath);
 
     if (!recognizedText || recognizedText.trim().length === 0) {
       await showToast({
@@ -64,15 +70,81 @@ export default async function Command() {
       return;
     }
 
-    await showToast({
-      style: Toast.Style.Failure,
-      title: "识别失败",
-      message: error instanceof Error ? error.message : "未知错误，请重试",
-    });
+    await handleOCRError(error);
   } finally {
     // Clean up temporary file
     if (tempFilePath) {
       await cleanupTempFile(tempFilePath);
     }
+  }
+}
+
+/**
+ * 统一的错误处理
+ */
+async function handleOCRError(error: unknown) {
+  if (error instanceof OCRError) {
+    switch (error.type) {
+      case OCRErrorType.API_KEY_INVALID:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "API Key 错误",
+          message: "请在扩展设置中配置有效的 OpenAI API Key",
+        });
+        break;
+
+      case OCRErrorType.QUOTA_EXCEEDED:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "配额超限",
+          message: "API 配额已用尽或达到速率限制，请稍后重试",
+        });
+        break;
+
+      case OCRErrorType.TIMEOUT:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "请求超时",
+          message: "OCR 处理时间过长，请尝试使用更小的图片",
+        });
+        break;
+
+      case OCRErrorType.NETWORK_ERROR:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "网络错误",
+          message: "无法连接到 API 服务，请检查网络连接",
+        });
+        break;
+
+      case OCRErrorType.CONFIG_ERROR:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "配置错误",
+          message: error.message,
+        });
+        break;
+
+      case OCRErrorType.INVALID_IMAGE:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "图片错误",
+          message: error.message,
+        });
+        break;
+
+      default:
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "识别失败",
+          message: error.message,
+        });
+    }
+  } else {
+    await showToast({
+      style: Toast.Style.Failure,
+      title: "识别失败",
+      message: error instanceof Error ? error.message : "未知错误，请重试",
+    });
   }
 }
