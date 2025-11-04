@@ -2,9 +2,20 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "raycast-ocr",
   "title": "OCR Text Recognition",
-  "description": "Extract text from images using macOS Vision API",
+  "description": "Extract text from images using macOS Vision API, OpenAI, or Gemini with smart LaTeX formula recognition",
   "icon": "icon-anthropic.png",
-  "author": "moguw",
+  "author": "mieluoxxx",
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
+  "keywords": [
+    "ocr",
+    "screenshot",
+    "clipboard",
+    "llm",
+    "openai"
+  ],
   "license": "MIT",
   "version": "1.0.0",
   "files": [

@@ -46,10 +46,21 @@
 
 ## 安装
 
+### 方式 1: 从 Raycast Store 安装 (推荐)
+
+一旦插件被接受到 Raycast Store，你可以：
+
+1. 打开 Raycast (`⌘ Space`)
+2. 搜索 "Store"
+3. 找到 "OCR Text Recognition"
+4. 点击安装
+
+### 方式 2: 手动开发安装
+
 1. 克隆或下载本项目:
 ```bash
-git clone https://github.com/你的用户名/raycast-ocr.git
-cd raycast-ocr
+git clone https://github.com/Mieluoxxx/siriusx-raycast-ocr.git
+cd siriusx-raycast-ocr
 ```
 
 2. 安装依赖:
