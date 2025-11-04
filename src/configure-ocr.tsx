@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Form, showToast, Toast, LocalStorage, useNavigation } from "@raycast/api";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getBackendConfig, saveBackendConfig } from "./utils/config";
 import { OCRBackend, OCRBackendConfig } from "./backends/types";
 
@@ -61,7 +61,7 @@ export default function Command() {
           apiKey: openaiApiKey?.trim() || undefined,
           apiEndpoint: openaiApiEndpoint?.trim() || "https://api.openai.com/v1",
           model: openaiModel?.trim() || "gpt-4o",
-          detail: openaiDetail || "high",
+          detail: (openaiDetail as "auto" | "low" | "high") || "high",
         };
       } else if (selectedBackend === OCRBackend.GEMINI_VLM) {
         newConfig = {

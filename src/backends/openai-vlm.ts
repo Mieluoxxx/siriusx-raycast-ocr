@@ -5,6 +5,7 @@
 
 import { readFile } from "fs/promises";
 import { IOCRBackend, OCRBackendConfig, OCRError, OCRErrorType } from "./types";
+import { STANDARD_OCR_PROMPT } from "../config/prompts";
 
 export class OpenAIVLMBackend implements IOCRBackend {
   private apiKey: string;
@@ -19,7 +20,7 @@ export class OpenAIVLMBackend implements IOCRBackend {
     this.detail = config.detail || "high"; // OCR 场景推荐使用 high
   }
 
-  async recognizeText(imagePath: string): Promise<string> {
+  async recognizeText(imagePath: string, customPrompt?: string): Promise<string> {
     // 验证配置
     if (!this.apiKey) {
       throw new OCRError(
@@ -32,7 +33,10 @@ export class OpenAIVLMBackend implements IOCRBackend {
       // 1. 读取并转换图片
       const { base64Image, mimeType } = await this.prepareImage(imagePath);
 
-      // 2. 构造 API 请求
+      // 2. 确定使用的提示词
+      const prompt = customPrompt || this.getOCRPrompt();
+
+      // 3. 构造 API 请求
       const response = await fetch(`${this.apiEndpoint}/chat/completions`, {
         method: "POST",
         headers: {
@@ -47,7 +51,7 @@ export class OpenAIVLMBackend implements IOCRBackend {
               content: [
                 {
                   type: "text",
-                  text: this.getOCRPrompt(),
+                  text: prompt,
                 },
                 {
                   type: "image_url",
@@ -65,13 +69,15 @@ export class OpenAIVLMBackend implements IOCRBackend {
         signal: AbortSignal.timeout(60000), // 60s timeout
       });
 
-      // 3. 处理 HTTP 错误
+      // 4. 处理 HTTP 错误
       if (!response.ok) {
         await this.handleAPIError(response);
       }
 
-      // 4. 解析响应
-      const data = await response.json();
+      // 5. 解析响应
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
       const text = data.choices?.[0]?.message?.content || "";
 
       if (!text) {
@@ -135,23 +141,10 @@ export class OpenAIVLMBackend implements IOCRBackend {
   }
 
   /**
-   * 获取优化的 OCR Prompt
+   * 获取默认的 OCR Prompt
    */
   private getOCRPrompt(): string {
-    return `Extract all text from this image accurately.
-
-Requirements:
-1. Preserve the original layout and line breaks
-2. Support Chinese (Simplified/Traditional), English, and mixed text
-3. Maintain formatting (spaces, indentation, tables if present)
-4. Return ONLY the extracted text without any explanation or additional content
-5. If no text is found, return an empty response
-6. IMPORTANT: Use appropriate punctuation based on the language:
-   - For Chinese text: Use Chinese punctuation marks (。,、;:?!)
-   - For English text: Use English punctuation marks (.,;:?!)
-   - For mixed Chinese-English text: Use Chinese punctuation for Chinese sentences and English punctuation for English sentences
-
-Please extract the text now:`;
+    return STANDARD_OCR_PROMPT;
   }
 
   /**
@@ -162,7 +155,9 @@ Please extract the text now:`;
     let errorType = OCRErrorType.UNKNOWN;
 
     try {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as {
+        error?: { message?: string };
+      };
       errorMessage = errorData.error?.message || errorMessage;
 
       // 根据错误信息分类

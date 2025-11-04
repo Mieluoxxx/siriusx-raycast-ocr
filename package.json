@@ -14,13 +14,13 @@
     {
       "name": "ocr-from-clipboard",
       "title": "OCR from Clipboard",
-      "description": "Recognize text from image in clipboard",
+      "description": "Recognize text and formulas from image in clipboard (auto LaTeX conversion with LLM backends)",
       "mode": "no-view"
     },
     {
       "name": "ocr-from-screenshot",
       "title": "OCR from Screenshot",
-      "description": "Take screenshot and recognize text",
+      "description": "Take screenshot and recognize text and formulas (auto LaTeX conversion with LLM backends)",
       "mode": "no-view"
     },
     {

@@ -34,10 +34,11 @@ export interface IOCRBackend {
   /**
    * 识别图片中的文字
    * @param imagePath - 图片文件的绝对路径
+   * @param customPrompt - 可选的自定义提示词(用于 LaTeX 等特殊场景)
    * @returns 识别出的文字内容
    * @throws OCRError 识别失败时抛出错误
    */
-  recognizeText(imagePath: string): Promise<string>;
+  recognizeText(imagePath: string, customPrompt?: string): Promise<string>;
 
   /**
    * 验证后端配置是否有效

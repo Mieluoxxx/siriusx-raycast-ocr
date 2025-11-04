@@ -5,6 +5,7 @@
 
 import { readFile } from "fs/promises";
 import { IOCRBackend, OCRBackendConfig, OCRError, OCRErrorType } from "./types";
+import { STANDARD_OCR_PROMPT } from "../config/prompts";
 
 export class GeminiVLMBackend implements IOCRBackend {
   private apiKey: string;
@@ -17,7 +18,7 @@ export class GeminiVLMBackend implements IOCRBackend {
     this.model = config.model || "gemini-2.5-flash";
   }
 
-  async recognizeText(imagePath: string): Promise<string> {
+  async recognizeText(imagePath: string, customPrompt?: string): Promise<string> {
     // 验证配置
     if (!this.apiKey) {
       throw new OCRError(
@@ -30,7 +31,10 @@ export class GeminiVLMBackend implements IOCRBackend {
       // 1. 读取并转换图片
       const { base64Image, mimeType } = await this.prepareImage(imagePath);
 
-      // 2. 构造 Gemini API 请求
+      // 2. 确定使用的提示词
+      const prompt = customPrompt || this.getOCRPrompt();
+
+      // 3. 构造 Gemini API 请求
       const url = `${this.apiEndpoint}/models/${this.model}:generateContent`;
       const response = await fetch(url, {
         method: "POST",
@@ -49,7 +53,7 @@ export class GeminiVLMBackend implements IOCRBackend {
                   },
                 },
                 {
-                  text: this.getOCRPrompt(),
+                  text: prompt,
                 },
               ],
             },
@@ -64,7 +68,11 @@ export class GeminiVLMBackend implements IOCRBackend {
       }
 
       // 4. 解析响应
-      const data = await response.json();
+      const data = (await response.json()) as {
+        candidates?: Array<{
+          content?: { parts?: Array<{ text?: string }> };
+        }>;
+      };
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
       if (!text) {
@@ -130,19 +138,10 @@ export class GeminiVLMBackend implements IOCRBackend {
   }
 
   /**
-   * 获取优化的 OCR Prompt
+   * 获取默认的 OCR Prompt
    */
   private getOCRPrompt(): string {
-    return `Extract all text from this image accurately.
-
-Requirements:
-1. Preserve the original layout and line breaks
-2. Support Chinese (Simplified/Traditional), English, and mixed text
-3. Maintain formatting (spaces, indentation, tables if present)
-4. Return ONLY the extracted text without any explanation or additional content
-5. If no text is found, return an empty response
-
-Please extract the text now:`;
+    return STANDARD_OCR_PROMPT;
   }
 
   /**
@@ -153,7 +152,9 @@ Please extract the text now:`;
     let errorType = OCRErrorType.UNKNOWN;
 
     try {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as {
+        error?: { message?: string };
+      };
       errorMessage = errorData.error?.message || errorMessage;
 
       // 根据错误信息分类
