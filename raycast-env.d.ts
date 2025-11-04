@@ -34,8 +34,6 @@ declare namespace Preferences {
   export type OcrFromClipboard = ExtensionPreferences & {}
   /** Preferences accessible in the `ocr-from-screenshot` command */
   export type OcrFromScreenshot = ExtensionPreferences & {}
-  /** Preferences accessible in the `configure-ocr` command */
-  export type ConfigureOcr = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
@@ -43,7 +41,5 @@ declare namespace Arguments {
   export type OcrFromClipboard = {}
   /** Arguments passed to the `ocr-from-screenshot` command */
   export type OcrFromScreenshot = {}
-  /** Arguments passed to the `configure-ocr` command */
-  export type ConfigureOcr = {}
 }
 
